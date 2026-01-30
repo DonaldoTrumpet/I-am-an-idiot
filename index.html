@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clicker Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .score-label {
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+
+        .score-number {
+            font-size: 4rem;
+            display: block;
+            margin-top: 0.5rem;
+        }
+
+        .image-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .clickable-image {
+            max-width: 400px;
+            width: 90vw;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.1s ease;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .image-container:hover .clickable-image {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-container:active .clickable-image {
+            transform: scale(0.95);
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: particleFloat 1s ease-out forwards;
+            font-size: 2rem;
+            z-index: 1000;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .squish {
+            animation: squishAnimation 0.3s ease-out;
+        }
+
+        @keyframes squishAnimation {
+            0% {
+                transform: scale(1);
+            }
+            30% {
+                transform: scale(0.75, 0.85);
+            }
+            50% {
+                transform: scale(0.8, 0.7);
+            }
+            70% {
+                transform: scale(1.05, 0.95);
+            }
+            85% {
+                transform: scale(0.98, 1.02);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .glow-pulse {
+            animation: glowPulse 0.5s ease-out;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(255, 255, 255, 1));
+            }
+            100% {
+                filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid white;
+            animation: rippleAnimation 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnimation {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        .combo-text {
+            position: fixed;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            pointer-events: none;
+            z-index: 1000;
+            animation: comboFloat 1s ease-out forwards;
+        }
+
+        @keyframes comboFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(1.5);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .score-display {
+                font-size: 2rem;
+            }
+
+            .score-number {
+                font-size: 3rem;
+            }
+
+            .clickable-image {
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="score-display">
+            <div class="score-label">Score</div>
+            <div class="score-number" id="scoreDisplay">0</div>
+        </div>
+        <div class="image-container" id="imageContainer">
+            <img 
+                src="https://image2url.com/r2/default/images/1769761679376-8ff66571-9dd4-4bb3-92b5-c909bef62520.jpeg" 
+                alt="Clickable Game Image" 
+                class="clickable-image" 
+                id="gameImage"
+            >
+        </div>
+    </div>
+
+    <script>
+        class ClickerGame {
+            constructor() {
+                this.score = 0;
+                this.clickCount = 0;
+                this.lastClickTime = 0;
+                this.comboThreshold = 200;
+                
+                this.imageContainer = document.getElementById('imageContainer');
+                this.gameImage = document.getElementById('gameImage');
+                this.scoreDisplay = document.getElementById('scoreDisplay');
+                
+                this.initAudio();
+                this.attachEventListeners();
+            }
+
+            initAudio() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            playBoingSound() {
+                const now = this.audioContext.currentTime;
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(400, now);
+                oscillator.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+                oscillator.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+                
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                
+                oscillator.start(now);
+                oscillator.stop(now + 0.2);
+            }
+
+            createParticles(x, y) {
+                const particleCount = 8;
+                const emojis = ['✨', '⭐', '💫', '🌟', '💥', '🎉'];
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const velocity = 100 + Math.random() * 50;
+                    const tx = Math.cos(angle) * velocity;
+                    const ty = Math.sin(angle) * velocity;
+                    
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.setProperty('--tx', tx + 'px');
+                    particle.style.setProperty('--ty', ty + 'px');
+                    
+                    document.body.appendChild(particle);
+                    
+                    setTimeout(() => particle.remove(), 1000);
+                }
+            }
+
+            createRipple(x, y) {
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                
+                const rect = this.imageContainer.getBoundingClientRect();
+                const localX = x - rect.left;
+                const localY = y - rect.top;
+                
+                ripple.style.left = localX + 'px';
+                ripple.style.top = localY + 'px';
+                ripple.style.marginLeft = '-100px';
+                ripple.style.marginTop = '-100px';
+                
+                this.imageContainer.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            }
+
+            showComboText() {
+                if (this.score % 10 === 0 && this.score > 0) {
+                    const comboText = document.createElement('div');
+                    comboText.className = 'combo-text';
+                    comboText.textContent = `${this.score} CLICKS! 🔥`;
+                    
+                    const rect = this.imageContainer.getBoundingClientRect();
+                    comboText.style.left = rect.left + rect.width / 2 - 100 + 'px';
+                    comboText.style.top = rect.top - 50 + 'px';
+                    
+                    document.body.appendChild(comboText);
+                    
+                    setTimeout(() => comboText.remove(), 1000);
+                }
+            }
+
+            updateScore() {
+                this.score++;
+                this.scoreDisplay.textContent = this.score;
+                
+                this.scoreDisplay.style.animation = 'none';
+                setTimeout(() => {
+                    this.scoreDisplay.style.animation = 'fadeIn 0.2s ease-in';
+                }, 10);
+            }
+
+            handleClick(event) {
+                event.preventDefault();
+                
+                const currentTime = Date.now();
+                const timeSinceLastClick = currentTime - this.lastClickTime;
+                
+                if (timeSinceLastClick < this.comboThreshold) {
+                    this.clickCount++;
+                } else {
+                    this.clickCount = 1;
+                }
+                this.lastClickTime = currentTime;
+                
+                this.playBoingSound();
+                
+                this.gameImage.classList.remove('squish', 'glow-pulse');
+                void this.gameImage.offsetWidth;
+                this.gameImage.classList.add('squish', 'glow-pulse');
+                
+                const x = event.clientX || (event.touches && event.touches[0].clientX) || window.innerWidth / 2;
+                const y = event.clientY || (event.touches && event.touches[0].clientY) || window.innerHeight / 2;
+                
+                this.createParticles(x, y);
+                this.createRipple(x, y);
+                
+                this.updateScore();
+                this.showComboText();
+            }
+
+            attachEventListeners() {
+                this.imageContainer.addEventListener('click', (e) => this.handleClick(e));
+                this.imageContainer.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.handleClick(e);
+                });
+                
+                this.gameImage.addEventListener('animationend', () => {
+                    this.gameImage.classList.remove('squish', 'glow-pulse');
+                });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            new ClickerGame();
+        });
+    </script>
+</body>
+</html>
