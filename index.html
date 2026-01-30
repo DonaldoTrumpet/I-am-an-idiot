@@ -89,15 +89,23 @@
     <div id="game-container"></div>
     
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/constants.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/entities/Player.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/entities/Bot.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/entities/Bullet.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/entities/Loot.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/scenes/BootScene.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/scenes/GameScene.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/scenes/UIScene.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/DonaldoTrumpet/I-am-an-idiot@main/js/main.js"></script>
+    <script src="js/constants.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Bot.js"></script>
+    <script src="js/entities/Bullet.js"></script>
+    <script src="js/entities/Loot.js"></script>
+    <script src="js/scenes/BootScene.js"></script>
+    <script src="js/scenes/GameScene.js"></script>
+    <script src="js/scenes/UIScene.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        setTimeout(() => {
+            const loading = document.getElementById('loading');
+            if (loading && loading.style.display !== 'none') {
+                console.warn('Loading screen still visible after 10 seconds - this may indicate an initialization problem');
+            }
+        }, 10000);
+    </script>
 </body>
 </html>

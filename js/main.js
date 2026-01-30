@@ -75,5 +75,19 @@ class Game extends Phaser.Game {
 }
 
 window.addEventListener('load', () => {
-    new Game();
+    try {
+        console.log('Initializing game...');
+        new Game();
+        console.log('Game initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize game:', error);
+        const loadingDiv = document.getElementById('loading');
+        if (loadingDiv) {
+            loadingDiv.innerHTML = `
+                <h1>❌ Error Loading Game</h1>
+                <p>Failed to initialize: ${error.message}</p>
+                <p style="color: #666; font-size: 0.9rem;">Check the console for more details</p>
+            `;
+        }
+    }
 });

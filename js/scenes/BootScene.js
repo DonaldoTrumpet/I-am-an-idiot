@@ -35,12 +35,21 @@ class BootScene extends Phaser.Scene {
     }
     
     create() {
+        console.log('BootScene: Creating game...');
         this.createSounds();
         
-        document.getElementById('loading').style.display = 'none';
+        console.log('BootScene: Hiding loading screen...');
+        const loadingElement = document.getElementById('loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        } else {
+            console.warn('BootScene: Loading element not found');
+        }
         
+        console.log('BootScene: Starting game scenes...');
         this.scene.start('GameScene');
         this.scene.start('UIScene');
+        console.log('BootScene: Initialization complete');
     }
     
     createSounds() {
